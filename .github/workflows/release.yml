@@ -1,0 +1,77 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build (e.g. v1.0.0). For workflow_dispatch only.'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ps2exe
+        shell: powershell
+        run: |
+          Install-Module -Name ps2exe -Scope CurrentUser -Force -AllowClobber
+          Import-Module ps2exe
+
+      - name: Syntax-check the script
+        shell: powershell
+        run: |
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            "$PWD\MouseJiggler.ps1", [ref]$null, [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_ }
+            exit 1
+          }
+
+      - name: Build WhiteMonster.exe
+        shell: powershell
+        run: |
+          Invoke-PS2EXE `
+            -InputFile  .\MouseJiggler.ps1 `
+            -OutputFile .\WhiteMonster.exe `
+            -Title      'WhiteMonster' `
+            -Description 'Lightweight mouse jiggler' `
+            -Product    'WhiteMonster' `
+            -NoConsole:$false `
+            -Verbose
+
+      - name: Compute SHA256
+        shell: powershell
+        run: |
+          $hash = (Get-FileHash .\WhiteMonster.exe -Algorithm SHA256).Hash
+          "WhiteMonster.exe SHA256: $hash" | Tee-Object -FilePath .\WhiteMonster.exe.sha256
+          Write-Host $hash
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WhiteMonster
+          path: |
+            WhiteMonster.exe
+            WhiteMonster.exe.sha256
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: ${{ github.event.inputs.tag || github.ref_name }}
+          generate_release_notes: true
+          files: |
+            WhiteMonster.exe
+            WhiteMonster.exe.sha256
