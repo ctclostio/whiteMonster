@@ -80,8 +80,8 @@ function Move-CursorSubtly {
 
 function Invoke-ActivitySimulation {
     param([string]$Key)
-    # F15 is stateless — single tap is fine.
-    # ScrollLock is stateful — double-tap so the toggle returns to its original state.
+    # F15 is stateless -- single tap is fine.
+    # ScrollLock is stateful -- double-tap so the toggle returns to its original state.
     $sequence = if ($Key -eq 'SCROLLLOCK') { "{$Key}{$Key}" } else { "{$Key}" }
     try {
         [System.Windows.Forms.SendKeys]::SendWait($sequence)
@@ -91,7 +91,7 @@ function Invoke-ActivitySimulation {
     }
 }
 
-# Console-host check — Quit-on-'q' relies on a real console
+# Console-host check -- Quit-on-'q' relies on a real console
 $isRealConsole = $Host.Name -eq 'ConsoleHost'
 if (-not $isRealConsole) {
     Write-Warning "Quit-on-'q' requires a real console. Use Ctrl+C in $($Host.Name)."
@@ -152,7 +152,7 @@ try {
         if (($now - $lastActivityTime) -ge $activityInterval) {
             if ($userActiveSinceLastKeepAlive) {
                 $skippedCount++
-                Write-Verbose "Skipped keep-alive — cursor activity observed"
+                Write-Verbose "Skipped keep-alive -- cursor activity observed"
             } else {
                 Invoke-ActivitySimulation -Key $KeepAliveKey
                 $activityCount++
