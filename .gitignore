@@ -1,0 +1,13 @@
+# PowerShell / ps2exe build artifacts
+*.exe.config
+*.pdb
+
+# Editors
+.vs/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
