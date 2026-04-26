@@ -165,8 +165,6 @@ try {
     }
 } finally {
     $runtime = (Get-Date) - $startTime
-    Write-Host (
-        "Stopped. Ran {0:hh\:mm\:ss}. Jiggles: {1}, keep-alives sent: {2}, skipped: {3}." `
-        -f $runtime, $jiggleCount, $activityCount, $skippedCount
-    )
+    $summary = 'Stopped. Ran {0:hh\:mm\:ss}. Jiggles: {1}, keep-alives sent: {2}, skipped: {3}.'
+    Write-Host ($summary -f $runtime, $jiggleCount, $activityCount, $skippedCount)
 }
