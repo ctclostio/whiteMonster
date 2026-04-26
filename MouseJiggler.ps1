@@ -80,9 +80,12 @@ function Move-CursorSubtly {
 
 function Invoke-ActivitySimulation {
     param([string]$Key)
+    # F15 is stateless — single tap is fine.
+    # ScrollLock is stateful — double-tap so the toggle returns to its original state.
+    $sequence = if ($Key -eq 'SCROLLLOCK') { "{$Key}{$Key}" } else { "{$Key}" }
     try {
-        [System.Windows.Forms.SendKeys]::SendWait("{$Key}")
-        Write-Verbose "Sent {$Key} at $(Get-Date -Format 'HH:mm:ss')"
+        [System.Windows.Forms.SendKeys]::SendWait($sequence)
+        Write-Verbose "Sent $sequence at $(Get-Date -Format 'HH:mm:ss')"
     } catch {
         Write-Warning "Failed to simulate activity: $_"
     }
